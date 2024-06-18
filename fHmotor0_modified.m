@@ -1,14 +1,25 @@
-function [features] = fHmotor0_modified(data_ax,data_ay,data_az,data_wz,ts,fs_daphne)
+function [features] = fHmotor0_modified(dataInput,ts,fs_daphne,limb)
 
 % Inizializzazione features
-features.taps=0;
-features.exc=0;
-features.excSD=0;
-features.wf=0;
-features.wfSD=0;
-features.wb=0;
-features.wbSD=0;
-features.IAV=0;
+features.taps = 0;
+features.exc = 0;
+features.excSD = 0;
+features.wf = 0;
+features.wfSD = 0;
+features.wb = 0;
+features.wbSD = 0;
+features.IAV = 0;
+
+%% Estrazione dati
+data_ax = dataInput(:,1);
+data_ay = dataInput(:,2);
+data_az = dataInput(:,3);
+data_wz = dataInput(:,6);
+% Inverto il segnale del giroscopio lungo z per il braccio destro, per la
+% convenzione velocità positiva = rotazione in avanti
+if strcmp(limb,'right hand')
+    data_wz = - data_wz;
+end
 
 %% Filtraggio passa-basso
 n = 4;
@@ -20,17 +31,16 @@ fdata_ay = filtfilt(b,a,data_ay);
 fdata_az = filtfilt(b,a,data_az);
 fdata_wz = filtfilt(b,a,data_wz);
 
-%% Rimozione offset (da rivedere)
+%% Rimozione offset
 offset = offsetCalculation(fdata_wz,ts,1,2);
 fdata_wz = fdata_wz - offset;
 
-%% Data segmentation
-plot_title = 'fdata_wz';
+%% Signal segmentation
+plot_title = strcat('fdata_wz_',limb);
 figure; plot(ts,fdata_wz,'g.-'); title(plot_title,'Interpreter','none');
 
 TH_start = 20;
 TH_v = 2;
-% k   =   250;
 [~,k] = min(abs(ts-2.5));
 p = length(ts);
 st = 1;
@@ -48,7 +58,7 @@ while(k<=p)
                     if (fdata_wz(app) < TH_v)
                         swing = swing + 1;
                         %                             arm_f = arm_f + 1;
-                        T_start(swing) = app; %inizia il movimento con wz positiva
+                        T_start = app; %inizia il movimento con wz positiva
                         hold on; plot(ts(T_start),fdata_wz(T_start), 'ko');
                         flag = 0;
                         st = 2;
@@ -61,7 +71,7 @@ while(k<=p)
                         app = app - 1;
                         if (fdata_wz(app) > -TH_v)
                             swing = swing + 1;
-                            T_start(swing) = app; %inizia il movimento con wz positiva
+                            T_start = app; %inizia il movimento con wz negativa
                             hold on; plot(ts(T_start),fdata_wz(T_start), 'bo');
                             flag = 0;
                             st = 3;
@@ -85,7 +95,7 @@ while(k<=p)
                 end
             end
         case 3
-            if (fdata_wz(k) > TH_start)  % braccio parte in avanti (front)
+            if (fdata_wz(k) > TH_start)  % braccio parte indietro (back)
                 app = k;
                 flag = 1;
                 while(flag)
@@ -103,71 +113,58 @@ while(k<=p)
     k = k+1;
 end
 
-%% 
+%%
 if swing > 0
     if ts(T_front(1))<ts(T_back(1)) %PRIMO MOV IN AVANTI
-        features.taps          = arm_f;                                %P01:NUMBER OF TAPPING
-        dif_ARMS      = diff(ts(T_front(2:end-1)));
-        media_ARMS    = mean(dif_ARMS);
-        devst_ARMS    = std(dif_ARMS);
-        f_osc         = 1/media_ARMS;
-        acc_x         = fdata_ax(T_start(1):T_back(end));
-        acc_y         = fdata_ay(T_start(1):T_back(end));
-        acc_z         = fdata_az(T_start(1):T_back(end));
-        acc           = sqrt(acc_x.^2+acc_y.^2+acc_z.^2);
-        IAV           = trapz(ts(T_start(1):T_back(end)),acc);%P08:ESTIMATED ENERGY EXPENDITURE
-        for i=1:(features.taps-1)
-            wzang         = fdata_wz(T_front(i):(T_back(i)));
-            tapp          = ts(T_front(i):(T_back(i)));
-            zang          = cumtrapz(tapp, wzang);    %oscillazione piano sagittale
-            %          hold on; plot(tapp, zang, 'k');
-            wzang2        = fdata_wz(T_back(i):(T_front(i+1)));
-            tapp2         = ts(T_back(i):(T_front(i+1)));
-            zang2         = cumtrapz(tapp2, wzang2);
-            zang_r        = zang2+zang(end);
-            %              hold on; plot(tapp2, zang_r, 'k');
-            mzang = (zang_r(end)-zang(1))/(tapp2(end)-tapp(1)); qzang = zang(1)-mzang*tapp(1);
-            zang_e = mzang*ts(T_front(i):T_front(i+1))+qzang;
-            %  %             hold on; plot(ts(T_front(i):T_front(i+1)),zang_e,'g');
-            zang_tot = [zang',(zang_r(2:end))'];
-            zang_m = zang_tot-zang_e;
-            hold on; plot(ts(T_front(i):T_front(i+1)),zang_m,'k');
-            w_back(i)      = mean(wzang);
-            w_front(i)     = mean(wzang2);
-            zang_sw(i)     = max(abs(zang_m));
-        end
+        firstMov = 'front';
+        features.taps = arm_f;                                %P01:NUMBER OF TAPPING
+        T_end = T_back;
+
+        T_1 = T_front;
+        T_2 = T_back;
     else
-        features.taps         = arm_b;  %PRIMO MOV INDIETRO
-        dif_ARMS     = diff(ts(T_back));
-        media_ARMS   = mean(dif_ARMS);
-        devst_ARMS   = std(dif_ARMS);
-        f_osc        = 1/media_ARMS;
-        acc_x        = fdata_ax(T_start(1):T_front(end));
-        acc_y        = fdata_ay(T_start(1):T_front(end));
-        acc_z        = fdata_az(T_start(1):T_front(end));
-        acc          = sqrt(acc_x.^2+acc_y.^2+acc_z.^2);
-        IAV          = trapz(ts(T_start(1):T_front(end)),acc);
-        for i=1:(features.taps-1)
-            wzang         = fdata_wz(T_back(i):(T_front(i)));
-            tapp          = ts(T_back(i):(T_front(i)));
-            zang          = cumtrapz(tapp, wzang);    %oscillazione piano sagittale
-            %          hold on; plot(tapp, zang, 'k');
-            wzang2         = fdata_wz(T_front(i):(T_back(i+1)));
-            tapp2          = ts(T_front(i):(T_back(i+1)));
-            zang2          = cumtrapz(tapp2, wzang2);
-            zang_r        = zang2+zang(end);
-            %              hold on; plot(tapp2, zang_r, 'k');
-            mzang = (zang_r(end)-zang(1))/(tapp2(end)-tapp(1)); qzang = zang(1)-mzang*tapp(1);
-            zang_e = mzang*ts(T_back(i):T_back(i+1))+qzang;
-            %  %             hold on; plot(ts(T_back(i):T_back(i+1)),zang_e,'g');
-            zang_tot = [zang',(zang_r(2:end))'];
-            zang_m = zang_tot-zang_e;
-            hold on; plot(ts(T_back(i):T_back(i+1)),zang_m,'b');
-            w_front(i)    = mean(wzang);
-            w_back(i)     = mean(wzang2);
-            zang_sw(i)    = max(abs(zang_m));
-        end
+        firstMov = 'back';
+        features.taps = arm_b;                                %P01:NUMBER OF TAPPING
+        T_end = T_front;
+
+        T_1 = T_back;
+        T_2 = T_front;
     end
+    acc_x         = fdata_ax(T_start:T_end(end));
+    acc_y         = fdata_ay(T_start:T_end(end));
+    acc_z         = fdata_az(T_start:T_end(end));
+    acc           = sqrt(acc_x.^2+acc_y.^2+acc_z.^2);
+    IAV           = trapz(ts(T_start:T_end(end)),acc);%P08:ESTIMATED ENERGY EXPENDITURE
+
+    for i=1:(features.taps-1)
+        wzang         = fdata_wz(T_1(i):(T_2(i)));
+        tapp          = ts(T_1(i):(T_2(i)));
+        zang          = cumtrapz(tapp, wzang);    %oscillazione piano sagittale
+        wzang2        = fdata_wz(T_2(i):(T_1(i+1)));
+        tapp2         = ts(T_2(i):(T_1(i+1)));
+        zang2         = cumtrapz(tapp2, wzang2);
+        zang_r        = zang2+zang(end);
+        mzang = (zang_r(end)-zang(1))/(tapp2(end)-tapp(1)); 
+        qzang = zang(1)-mzang*tapp(1);
+        zang_e = mzang*ts(T_1(i):T_1(i+1))+qzang;
+        zang_tot = [zang',(zang_r(2:end))'];
+        zang_m = zang_tot-zang_e;
+        hold on; plot(ts(T_1(i):T_1(i+1)),zang_m,'k');
+        w_1(i)      = mean(wzang);
+        w_2(i)     = mean(wzang2);
+        zang_sw(i)     = max(abs(zang_m));
+    end
+
+    if strcmp(firstMov,'front')
+        w_back = w_1;
+        w_front = w_2;
+    else
+        w_back = w_2;
+        w_front = w_1;
+    end
+
+
+    %%
 
     features.exc      = round(mean(zang_sw(2:end-1))*100)/100;       %P02:MEAN ANGULAR AMPLITUDE OF SWING
     features.excSD    = round(std(abs(zang_sw(2:end-1)))*100)/100;   %P03:SD OF ANGULAR AMPLITUDE OF SWING

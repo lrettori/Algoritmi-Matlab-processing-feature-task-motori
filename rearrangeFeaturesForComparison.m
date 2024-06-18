@@ -1,7 +1,5 @@
 function featuresRearranged = rearrangeFeaturesForComparison(features,exercise)
 
-
-
 switch exercise
 
     case {"THFv", "THFa", "FTAP", "OPCv", "OPCa", "PSUP", "TTHP", "HTTP"}
@@ -22,14 +20,11 @@ switch exercise
     case "HETO"
         featuresRearranged = [features.taps, features.exc_t, features.exc_tSD, features.exc_h, features.exc_hSD, features.wt, features.wtSD,features.wh, features.whSD, features.IAV, features.fTT, features.fHH, features.hes];
 
-    case "GTAS"
-
     case "ROTA"
         featuresRearranged = [features.time, features.numbOfStrides, features.frequency, features.stanceTime, features.relStanceTime];
         
     case "STUP"
         featuresRearranged = features.time;
-
 
 end
 

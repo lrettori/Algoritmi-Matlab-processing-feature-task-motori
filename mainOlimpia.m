@@ -22,7 +22,10 @@ switch exercise
         features = fFmotorHE_modified(data_ax,data_ay,data_az,data_wx,data_wy,data_wz,ts,fs_daphne);
         
     case 'GTAS'
-        featuresHands = fHmotor0_modified(data_ax,data_ay,data_az,data_wz,ts,fs_daphne);
+        featuresLeftHand = fHmotor0_modified(data_LH,ts,fs_daphne,'left hand');
+        featuresRightHand = fHmotor0_modified(data_RH,ts,fs_daphne,'right hand');
+        featuresLeftFoot = fFmotorGAIT_modified(data_LF,ts,fs_daphne,'left foot');
+        featuresRightFoot = fFmotorGAIT_modified(data_RF,ts,fs_daphne,'right foot'); 
 
     case 'ROTA'
         features = fFmotorROTA_modified(side,data_ax,data_ay,data_az,data_wx,data_wy,data_wz,ts,fs_daphne);
@@ -37,6 +40,9 @@ switch exercise
     case {'POST', 'HRST', 'FRST'}
         featuresRearrangedSx = rearrangeFeaturesForComparison(featuresSx,exercise);
         featuresRearrangedDx = rearrangeFeaturesForComparison(featuresDx,exercise);
+
+    case 'GTAS'
+        featuresRearranged = rearrangeFeaturesGait(featuresLeftHand,featuresRightHand,featuresLeftFoot,featuresRightFoot);
 
     otherwise
         featuresRearranged = rearrangeFeaturesForComparison(features,exercise);

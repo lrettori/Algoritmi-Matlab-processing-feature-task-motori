@@ -27,6 +27,8 @@ wxOffsetRemov = fdata_wx - offsetWx;
 wyOffsetRemov = fdata_wy - offsetWy;
 wzOffsetRemov = fdata_wz - offsetWz;
 
+figure;plot(wxOffsetRemov);hold on;plot(wyOffsetRemov);plot(wzOffsetRemov);
+
 %% Trovo gli istanti di inizio e fine esercizio
 % Per esercizi HRST e FRST l'esercizio si svolge tra 3 e 35 secondi
 % Per POST tra 3 e 13 secondi
@@ -53,33 +55,49 @@ elseif strcmp(exercise,'KINT')
     [~,k] = min(abs(ts-5));
     p = length(ts);
     THRE=100;
-    TH_t=5;
+    TH_t=9;
     step = 0;
-    while(p>=k)
-        if (wxOffsetRemov(p) > THRE)
+    % Per il calcolo del Tend uso il modulo del giroscopio sui tre assi,
+    % per evitare problemi dovuti ad una esecuzione errata del movimento da
+    % parte del paziente (serve esclusivamente per trovare il Tend, quindi
+    % non modifico il calcolo delle features, ma solo l'intervallo di
+    % riferimento)
+    wModuleOffsetRemov = sqrt(wxOffsetRemov.^2 + wyOffsetRemov.^2 + wzOffsetRemov.^2);
+    flagTendNotFound = 1;
+
+    while(p>=k && flagTendNotFound)
+        if (wModuleOffsetRemov(p) > THRE)
             app = p;
             flag = 1;
-            while(flag)
+            while(flag && app < length(ts))
                 app = app + 1;
-                if (wxOffsetRemov(app) < TH_t)
+                if (wModuleOffsetRemov(app) < TH_t)
                     step = step + 1;
-                    T_end(step) = app;
+                    T_end = app;
                     flag = 0;
+                    flagTendNotFound = 0;
                     break;
                 end
             end
         end
         p = p-1;
     end
-    indexStop = T_end(1);
+    indexStop = T_end;
     numbOfTimeIntervals = 1;
+
+    figure;plot(ts,wModuleOffsetRemov);hold on;
+    plot(ts(indexStart),wModuleOffsetRemov(indexStart), 'go');
+    plot(ts(indexStop),wModuleOffsetRemov(indexStop), 'ro');
 end
 
-figure;plot(ts,wxOffsetRemov)
+%% Filtraggio passa-alto, con frequenza di taglio di 0.5 Hz (1.5 Hz per KINT)
 
-%% Filtraggio passa-alto, con frequenza di taglio di 0.5 Hz
+ft = 0.5;
+if strcmp(exercise,'KINT')
+    ft = 1.5;
+end
 
-[d,c]= butter(4,2*0.5/fs_daphne,'high');
+[d,c]= butter(4,2*ft/fs_daphne,'high');
 
 accTot = sqrt(fdata_ax.^2+fdata_ay.^2+fdata_az.^2);  %acc 3D
 

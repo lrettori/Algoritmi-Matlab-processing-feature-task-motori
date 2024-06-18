@@ -68,7 +68,10 @@ switch exercise
         dataColumns = 43:1:48;
 
     case 'GTAS'
-        dataColumns = 1:1:6; % da rivedere, valido solo per uno dei dati
+        dataColumns_LH = 1:1:6; % left wrist
+        dataColumns_RH = 19:1:24; % right wrist
+        dataColumns_LF = 37:1:42; % left foot
+        dataColumns_RF = 43:1:48; % right foot
 
 end
 
@@ -91,6 +94,14 @@ switch exercise
         data_wz_Dx = firstImportRawData.data(:,dataColumnsDx(6));
 
         samples = length(data_ax_Dx);
+
+    case 'GTAS'
+        data_LH = firstImportRawData.data(:,dataColumns_LH);
+        data_RH = firstImportRawData.data(:,dataColumns_RH);
+        data_LF = firstImportRawData.data(:,dataColumns_LF);
+        data_RF = firstImportRawData.data(:,dataColumns_RF);
+
+        samples = length(data_LH(:,1));
 
     otherwise
         data_ax = firstImportRawData.data(:,dataColumns(1));
