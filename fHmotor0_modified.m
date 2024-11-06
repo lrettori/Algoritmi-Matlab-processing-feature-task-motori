@@ -114,7 +114,7 @@ while(k<=p)
 end
 
 %%
-if swing > 0
+if (swing > 0 && arm_f > 0 && arm_b > 0)
     if ts(T_front(1))<ts(T_back(1)) %PRIMO MOV IN AVANTI
         firstMov = 'front';
         features.taps = arm_f;                                %P01:NUMBER OF TAPPING
