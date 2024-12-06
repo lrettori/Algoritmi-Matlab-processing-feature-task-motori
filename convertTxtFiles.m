@@ -1,23 +1,43 @@
-%% Script per la modifica dei file dati, per il testing del SW Olimpia feature extraction
+%% Script per la conversione dei file dati vecchio formato in quello nuovo (da Olimpia in poi)
 % Aggiunge l'header e raccoglie i dati secondo la struttura definita
 % (eliminando i campi relativi al magnetometro)
-% Per ora funziona solo per i task relativi ad acquisizioni dei soli
-% sensori per le mani
 
-clear all
+clear
 close all
 
-% Soluzione in cui seleziono un file txt alla volta
+% -----------------------------------------------------
+% % Soluzione in cui seleziono un file txt alla volta
 % [filenameIn, pathIn] = uigetfile('D:\Ricerca UNIFI\Olimpia\Dati esempio vecchi (pre-Olimpia)\Esercizi di prova\*.txt');
+% -----------------------------------------------------
 
-% Soluzione in cui seleziono una cartella e faccio la conversione di tutti
-% i file txt al suo interno
-pathIn = uigetdir('D:\Ricerca UNIFI\Olimpia\Dati\Dati pre-Olimpia', "Seleziona la cartella");
-FolderInfo = dir(strcat(pathIn,'\*.txt'));
+% -----------------------------------------------------
+% % Soluzione in cui seleziono una cartella e faccio la conversione di tutti
+% % i file txt al suo interno (da selezionare la cartella SENSOR_DATA)
+% pathIn = uigetdir('C:\Users\loren\OneDrive - unifi.it\Documents\Unifi\Olimpia\Dati\Dati pre-Olimpia', "Seleziona la cartella");
+% FolderInfo = dir(strcat(pathIn,'\*.txt'));
+% len = 3; % metto len = 3 così entrerò nel ciclo for una sola volta
+% singleFolder = true;
+% -----------------------------------------------------
 
-idcs   = strfind(pathIn,'\');
-pathOut = strcat(pathIn(1:idcs(end)-1),'\NewFormatData\');
-mkdir(pathOut);
+% -----------------------------------------------------
+% Soluzione in cui seleziono una cartella contenente le cartelle di più
+% soggetti, e le converte una alla volta
+pathIn2 = uigetdir('C:\Users\loren\OneDrive - unifi.it\Documents\Unifi\Olimpia\Dati\Dati pre-Olimpia', "Seleziona la cartella contenente le cartelle dei soggetti");
+BigFolderInfo = dir(pathIn2);
+len = length(BigFolderInfo);
+singleFolder = false;
+% -----------------------------------------------------
+
+for ll = 3 : len
+    if ~(singleFolder)
+        pathIn = strcat(pathIn2,'\',BigFolderInfo(ll).name,'\SENSOR_DATA');
+        FolderInfo = dir(strcat(BigFolderInfo(ll).folder,'\',BigFolderInfo(ll).name,'\SENSOR_DATA\*.txt'));
+    end
+
+
+    idcs   = strfind(pathIn,'\');
+    pathOut = strcat(pathIn(1:idcs(end)-1),'\NewFormatData\');
+    mkdir(pathOut);
 
 ColumnNames = {'Timestamps' 'Acc_x_0' 'Acc_y_0'	'Acc_z_0'	'Gyr_x_0'	'Gyr_y_0'	'Gyr_z_0'...	
     'Acc_x_1'	'Acc_y_1'	'Acc_z_1'	'Gyr_x_1'	'Gyr_y_1'	'Gyr_z_1'...
@@ -411,6 +431,16 @@ for kk = 1:length(FolderInfo)
     counter = counter + 1;
 end
 close(f)
+
+
+
+
+
+end
+
+
+
+
 
 
 

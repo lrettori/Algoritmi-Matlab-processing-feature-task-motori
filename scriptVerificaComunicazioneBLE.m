@@ -37,7 +37,7 @@ sensor5 = importedData(:,34:39);
 sensor6 = importedData(:,40:45);
 sensor7 = importedData(:,46:51);
 
-figure;subplot(2,1,1);plot(bytesRead); title('bytes in input buffer');
+% figure;subplot(2,1,1);plot(bytesRead); title('bytes in input buffer');
 a = cellstr(time);
 timeMatrix = zeros(length(time),4);
 milliseconds = zeros(length(time),1);
