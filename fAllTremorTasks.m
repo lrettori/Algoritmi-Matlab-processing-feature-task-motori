@@ -16,6 +16,12 @@ fdata_az = filtfilt(b,a,data_az);
 fdata_wx = filtfilt(b,a,data_wx);
 fdata_wy = filtfilt(b,a,data_wy);
 fdata_wz = filtfilt(b,a,data_wz);
+% fdata_ax = data_ax;
+% fdata_ay = data_ay;
+% fdata_az = data_az;
+% fdata_wx = data_wx;
+% fdata_wy = data_wy;
+% fdata_wz = data_wz;
 
 %% Rimozione dell'offset per il segnale del giroscopio
 
@@ -28,6 +34,7 @@ wyOffsetRemov = fdata_wy - offsetWy;
 wzOffsetRemov = fdata_wz - offsetWz;
 
 figure;plot(wxOffsetRemov);hold on;plot(wyOffsetRemov);plot(wzOffsetRemov);
+title('Gyroscope data')
 
 %% Trovo gli istanti di inizio e fine esercizio
 % Per esercizi HRST e FRST l'esercizio si svolge tra 3 e 35 secondi
@@ -103,6 +110,8 @@ accTot = sqrt(fdata_ax.^2+fdata_ay.^2+fdata_az.^2);  %acc 3D
 
 % Dati filtrati (LP e HP) in tutto l'intervallo di acquisizione
 accFilteredTot = filtfilt(d,c,accTot);
+% accFilteredTot = accTot;
+
 wxFilteredTot = filtfilt(d,c,wxOffsetRemov);
 wyFilteredTot = filtfilt(d,c,wyOffsetRemov);
 wzFilteredTot = filtfilt(d,c,wzOffsetRemov);
@@ -147,7 +156,7 @@ for i = 1:numbOfTimeIntervals
 
     features.PwrA(i) = (sum(Pacc_i(1:NFFT_i/2+1))) * (fs_daphne/2) / (NFFT_i/2); % Sostituisce la funzione avgpower
 
-    figure;plot(f_i,Pacc_i(1:NFFT_i/2+1));title('Spettro segnale di accelerazione');
+    % figure;plot(f_i,Pacc_i(1:NFFT_i/2+1));title('Spettro segnale di accelerazione');
 
     indexFreqRange1 = zeros(1,2);
     indexFreqRange2 = zeros(1,2);
@@ -201,21 +210,21 @@ for i = 1:numbOfTimeIntervals
             features.PwrG(i) = (sum(Pwx_i(1:NFFT_i/2+1))) * (fs_daphne/2) / (NFFT_i/2); % Sostituisce la funzione avgpower
             Pwr_g1 = (sum(Pwx_i(indexFreqRange1(1) : indexFreqRange1(2)))) * (fs_daphne/2) / (NFFT_i/2);
             Pwr_g2 = (sum(Pwx_i(indexFreqRange2(1) : indexFreqRange2(2)))) * (fs_daphne/2) / (NFFT_i/2);
-            figure;plot(f_i,Pwx_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
+            % figure;plot(f_i,Pwx_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
 
         case 2
             features.freqG(i) = f_i(fundFreqIndexY);
             features.PwrG(i) = (sum(Pwy_i(1:NFFT_i/2+1))) * (fs_daphne/2) / (NFFT_i/2); % Sostituisce la funzione avgpower
             Pwr_g1 = (sum(Pwy_i(indexFreqRange1(1) : indexFreqRange1(2)))) * (fs_daphne/2) / (NFFT_i/2);
             Pwr_g2 = (sum(Pwy_i(indexFreqRange2(1) : indexFreqRange2(2)))) * (fs_daphne/2) / (NFFT_i/2);
-            figure;plot(f_i,Pwy_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
+            % figure;plot(f_i,Pwy_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
 
         case 3
             features.freqG(i) = f_i(fundFreqIndexZ);
             features.PwrG(i) = (sum(Pwz_i(1:NFFT_i/2+1))) * (fs_daphne/2) / (NFFT_i/2); % Sostituisce la funzione avgpower
             Pwr_g1 = (sum(Pwz_i(indexFreqRange1(1) : indexFreqRange1(2)))) * (fs_daphne/2) / (NFFT_i/2);
             Pwr_g2 = (sum(Pwz_i(indexFreqRange2(1) : indexFreqRange2(2)))) * (fs_daphne/2) / (NFFT_i/2);
-            figure;plot(f_i,Pwz_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
+            % figure;plot(f_i,Pwz_i(1:NFFT_i/2+1));title('Spettro segnale di velocità angolare');
 
     end
     features.Perc1G(i) = Pwr_g1/features.PwrG(i)*100;
@@ -229,5 +238,6 @@ features.Perc2A = round(features.Perc2A*100)/100;
 features.freqG = round(features.freqG*100)/100;
 features.Perc1G = round(features.Perc1G*100)/100;
 features.Perc2G = round(features.Perc2G*100)/100;
+
 
 end

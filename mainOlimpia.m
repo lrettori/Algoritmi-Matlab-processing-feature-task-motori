@@ -11,6 +11,24 @@ switch exercise
     case {'POST', 'HRST', 'FRST'}
         featuresDx = fAllTremorTasks(ts,data_ax_Dx,data_ay_Dx,data_az_Dx,data_wx_Dx,data_wy_Dx,data_wz_Dx,fs_daphne,exercise);
         featuresSx = fAllTremorTasks(ts,data_ax_Sx,data_ay_Sx,data_az_Sx,data_wx_Sx,data_wy_Sx,data_wz_Sx,fs_daphne,exercise);
+        
+        figure;
+        subplot(2,3,1);plot(data_ax_Dx);
+        subplot(2,3,2);plot(data_ay_Dx);
+        subplot(2,3,3);plot(data_az_Dx);
+        subplot(2,3,4);plot(data_wx_Dx);
+        subplot(2,3,5);plot(data_wy_Dx);
+        subplot(2,3,6);plot(data_wz_Dx);
+        % title('dati piede dx')
+
+        figure;
+        subplot(2,3,1);plot(data_ax_Sx);
+        subplot(2,3,2);plot(data_ay_Sx);
+        subplot(2,3,3);plot(data_az_Sx);
+        subplot(2,3,4);plot(data_wx_Sx);
+        subplot(2,3,5);plot(data_wy_Sx);
+        subplot(2,3,6);plot(data_wz_Sx);
+        % title('dati piede sx')
 
     case {'KINT'}
         features = fAllTremorTasks(ts,data_ax,data_ay,data_az,data_wx,data_wy,data_wz,fs_daphne,exercise);

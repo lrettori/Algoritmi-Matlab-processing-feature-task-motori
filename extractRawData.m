@@ -20,11 +20,11 @@ firstImportRawData = importdata(filenameData,'\t', 9);
 % Determino le colonne da estrarre, sulla base del lato (dx o sx) sul quale
 % è stata effettuata l'acquisizione e del tipo di esercizio
 filename = convertCharsToStrings(filename);
-title = strsplit(filename,'_');
-exercise = title(1);
+name = strsplit(filename,'_');
+exercise = name(1);
 switch exercise
     case {'FTAP', 'THFv', 'THFa', 'OPCv', 'OPCa', 'KINT'}
-        side = title(2);
+        side = name(2);
         if strcmp(side,'DX')
             % RIND
             dataColumns = 31:1:36;
@@ -34,7 +34,7 @@ switch exercise
         end
 
     case 'PSUP'
-        side = title(2);
+        side = name(2);
         if strcmp(side,'DX')
             % RWRS
             dataColumns = 19:1:24;
@@ -49,7 +49,7 @@ switch exercise
         dataColumnsDx = 31:1:36;
 
     case {'TTHP', 'HTTP', 'HEHE', 'HETO', 'ROTA'}
-        side = title(2);
+        side = name(2);
         if strcmp(side,'DX')
             % RFTT
             dataColumns = 43:1:48;

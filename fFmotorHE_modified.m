@@ -168,7 +168,8 @@ features.power  = avgpower(Hpsd_a); %P22: AVERAGE POWER IN PSD
 
 
 fmin = 0.5; %fundfreq-2;
-fmax = features.fundfreq+2;
+% fmax = features.fundfreq+2;
+fmax = features.fundfreq+1; % Correzione 04/09/2026
 [h,g] = butter(4,2*[fmin,fmax]/fs,'bandpass');
 % [h,g] = butter(4,(2*fmax)/fs,'low');
 
@@ -188,7 +189,8 @@ acc1 = acc2;
 
 plot_title = 'acc1';
 figure; plot(ts_d2,acc1,'b.-');title(plot_title);
-TH_HE  =  1;      %  °/s, al di sotto di questa velocità angolare il piede si considera totalmente appoggiato a terra
+% TH_HE  =  1;      %  °/s, al di sotto di questa velocità angolare il piede si considera totalmente appoggiato a terra
+TH_HE  =  0.8; % Correzione 04/09/2026
 TH_HE1  =  1;
 TH_HEv =  0.2;
 k   =   200;
